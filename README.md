@@ -102,4 +102,13 @@ Request
   501 43091 43085   0 11:20PM ttys005    0:00.11 /Users/jiapan/.virtualenvs/todo-list-flask/bin/python /Users/jiapan/.virtualenvs/todo-list-flask/bin/gunicorn -w 2 index:app -b 0.0.0.0:5000 -n todo-list-flask --timeout 45 --max-requests 10000
 ```
 
-可以看到 `子进程` 的 `父进程id` 为 `主进程的id`，说明子进程是附近成 fork 出来的
+可以看到 `子进程` 的 `父进程id` 为 `主进程的id`，说明子进程是附近成 fork 出来的。
+
+但是启动 koa 后，只有一个进程号
+
+```
+➜ ps -ef | grep "app.js"
+  501 46119 46118   0 11:29PM ttys003    0:00.22 node app.js
+```
+
+当然，直接启动 `index.py` 文件也没问题，也可以实现单进程，但是这样的话就会出现同一时间只能处理一个请求的情况，因为 Flask 采用的是同步阻塞模型，所以会影响后续请求，所以我们才需要 Gunicorn 来作为容器，同一启动多个进程（Apache tomcat 也是类似这个道理）。
