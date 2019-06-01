@@ -17,7 +17,11 @@ class TaskController {
     }
 
     async get(ctx, next) {
-        ctx.body = await get(ctx.params.id)
+        let task = await get(ctx.params.id)
+        if (task) {
+            return task
+        }
+        return "task id 不存在"
     }
 
     async create(ctx, next) {
