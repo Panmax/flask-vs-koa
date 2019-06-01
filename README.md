@@ -1,14 +1,5 @@
 ## 通过用 Flask 和 Koa 实现相同的 ToDo List API 来学习不同的并发模型
 
-### 并发模型
-
-- Flask
-    - 多线程
-    - 同步，阻塞
-- Koa
-    - 单线程
-    - 异步，非阻塞
-
 ## 分别实现如下五个接口
 
 ### GET 获取所有任务
@@ -79,3 +70,36 @@ Request
 ### DELETE 删除任务
 
 `/api/tasks/3149e346-395d-49ad-9db7-53eec290638f`
+
+## 并发模型
+
+- Flask
+    - 多进程
+    - 同步，阻塞
+- Koa
+    - 单进程
+    - 异步，非阻塞
+
+通过 Gunicorn 启动 Flask 后通过日志可以看到，启动了一个主进程和多个子进程：
+
+```
+➜ gunicorn -w 2 index:app -b 0.0.0.0:5000 -n todo-list-flask --timeout 45 --max-requests 10000
+[2019-06-01 23:23:09 +0800] [44345] [INFO] Starting gunicorn 19.6.0
+[2019-06-01 23:23:09 +0800] [44345] [INFO] Listening at: http://0.0.0.0:5000 (44345)
+[2019-06-01 23:23:09 +0800] [44345] [INFO] Using worker: sync
+[2019-06-01 23:23:09 +0800] [44349] [INFO] Booting worker with pid: 44349
+[2019-06-01 23:23:09 +0800] [44350] [INFO] Booting worker with pid: 44350
+```
+
+杀掉子进程，主进程会自动重新开启一个新的子进程，但是杀掉主进程，整个程序会退出。
+
+通过 `ps` 命令也可以看到效果：
+
+```
+➜ ps -ef | grep python
+  501 43085 42098   0 11:20PM ttys005    0:00.30 /Users/jiapan/.virtualenvs/todo-list-flask/bin/python /Users/jiapan/.virtualenvs/todo-list-flask/bin/gunicorn -w 2 index:app -b 0.0.0.0:5000 -n todo-list-flask --timeout 45 --max-requests 10000
+  501 43088 43085   0 11:20PM ttys005    0:00.13 /Users/jiapan/.virtualenvs/todo-list-flask/bin/python /Users/jiapan/.virtualenvs/todo-list-flask/bin/gunicorn -w 2 index:app -b 0.0.0.0:5000 -n todo-list-flask --timeout 45 --max-requests 10000
+  501 43091 43085   0 11:20PM ttys005    0:00.11 /Users/jiapan/.virtualenvs/todo-list-flask/bin/python /Users/jiapan/.virtualenvs/todo-list-flask/bin/gunicorn -w 2 index:app -b 0.0.0.0:5000 -n todo-list-flask --timeout 45 --max-requests 10000
+```
+
+可以看到 `子进程` 的 `父进程id` 为 `主进程的id`，说明子进程是附近成 fork 出来的
