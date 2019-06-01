@@ -1,0 +1,16 @@
+{
+  "name": "todo-list-koa",
+  "version": "1.0.0",
+  "description": "用 koa 实现 todo-list 应用",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "Panmax",
+  "license": "ISC",
+  "dependencies": {
+    "koa": "^2.5.1",
+    "koa-bodyparser": "^4.2.0",
+    "koa-router": "^7.4.0"
+  }
+}
